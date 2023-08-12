@@ -1,18 +1,13 @@
-use shaku::Interface;
 use shaku::Component;
-
-
-pub trait UserRepository: Interface {
-    fn find_user(&self, id:String);
-}
+use shaku::Interface;
 
 #[derive(Component)]
-#[shaku(interface = Connector)]
+#[shaku(interface = IConnector)]
 pub struct ApiConnector {
     #[shaku(default)]
-    pub target_date: String
+    pub target_user: String,
 }
 
-pub trait Connector: Interface {
-    fn get(&self);
+pub trait IConnector: Interface {
+    fn get_id(&self, user_name: String) -> String;
 }

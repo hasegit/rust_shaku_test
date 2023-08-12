@@ -1,83 +1,25 @@
-// mod domain;
-
-// use shaku::{module, Component, Interface, HasComponent};
-// use std::sync::Arc;
-
-// trait Logger: Interface {
-//     fn log(&self, content: &str);
-// }
-
-// trait DateLogger: Interface {
-//     fn log_date(&self);
-// }
-
-// #[derive(Component)]
-// #[shaku(interface = Logger)]
-// struct LoggerImpl;
-
-// impl Logger for LoggerImpl {
-//     fn log(&self, content: &str) {
-//         println!("{}", content);
-//     }
-// }
-
-// #[derive(Component)]
-// #[shaku(interface = DateLogger)]
-// struct DateLoggerImpl {
-//     #[shaku(inject)]
-//     logger: Arc<dyn Logger>,
-//     #[shaku(default)]
-//     today: String,
-//     #[shaku(default)]
-//     year: usize,
-// }
-
-// impl DateLogger for DateLoggerImpl {
-//     fn log_date(&self) {
-//         self.logger.log(&format!("Today is {}, {}", self.today, self.year));
-//     }
-// }
-
-// module! {
-//     MyModule {
-//         components = [LoggerImpl, DateLoggerImpl],
-//         providers = []
-//     }
-// }
-
+use di::domain::{
+    api::{ApiConnector, ApiConnectorParameters},
+    storage::UserRepository,
+};
+use di::usecase::user::{IUserUpdater, UserUpdater};
 use shaku::{module, HasComponent};
-use di::infrastructure::api::UserRepositoryImpl;
-use di::domain::api::{ApiConnector, ApiConnectorParameters};
 
 module! {
-    ApiModule {
-        components = [UserRepositoryImpl],
+    InfrastructureModule {
+        components = [UserRepository, ApiConnector, UserUpdater],
         providers=[]
     }
 }
-
-module! {
-    ApModule {
-        components = [ApiConnector],
-        providers=[]
-    }
-}
-
 
 fn main() {
-    let module = ApiModule::builder().build();
+    let module = InfrastructureModule::builder()
+        .with_component_parameters::<ApiConnector>(ApiConnectorParameters {
+            target_user: "ojisan".to_owned(),
+        })
+        .build();
 
-    let app = module.resolve_ref();
-    app.find_user("POI".to_owned());
-
-    let module = ApModule::builder().with_component_parameters::<ApiConnector>(ApiConnectorParameters {
-        target_date: "2020-20-20".to_owned()
-    })
-    .build();
-
-    let app = module.resolve_ref();
-    app.get();
-
-    // let date_logger: &dyn DateLogger = module.resolve_ref();
-    // date_logger.log_date();
+    let usecase: &dyn IUserUpdater = module.resolve_ref();
+    usecase.update("hogeo".to_owned());
+    usecase.update("john".to_owned());
 }

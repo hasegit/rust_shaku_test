@@ -1,30 +1,12 @@
-use shaku::Component;
-use crate::domain::api::{UserRepository, ApiConnector, Connector};
-
-#[derive(Component)]
-#[shaku(interface = UserRepository)]
-pub struct UserRepositoryImpl;
-
-impl UserRepository for UserRepositoryImpl {
-    fn find_user(&self, id: String) {
-        println!("find {}", id)
-    }
-}
+use crate::domain::api::{ApiConnector, IConnector};
 
 impl ApiConnector {}
 
-impl Connector for ApiConnector {
-    fn get(&self) {
-        println!("{}",self.target_date);
+impl IConnector for ApiConnector {
+    fn get_id(&self, user_name: String) -> String {
+        if user_name == "john" {
+            return "0002".to_owned();
+        }
+        "0001".to_owned()
     }
 }
-
-// #[derive(Component)]
-// #[shaku(interface = Logger)]
-// struct LoggerImpl;
-
-// impl Logger for LoggerImpl {
-//     fn log(&self, content: &str) {
-//         println!("{}", content);
-//     }
-// }
